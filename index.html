@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+	<title>欢迎测试在线聊天系统</title>
+    <link rel="icon" href="http://avatar.csdn.net/5/F/C/1_j_h_s.jpg">
+    <script type="text/javascript" src="js/zepto.min.js"></script>
+    <script type="text/javascript" src="js/fx.js"></script>
+	<style type="text/css">
+		*{margin: 0;padding: 0;}
+		body{font-family: "微软雅黑";font-size: 1em;background-color: #fff;max-width: 500px;margin:0 auto;position: relative;}
+		header{width: 100%;height: 40px;background-color: #54A4F5;position: fixed;top:0;box-shadow: 0 0 10px #999;z-index: 999;text-align: center;max-width: 500px;overflow: hidden;}
+		header h3{color: #fff;font-weight: bold;line-height: 40px;}
+		#con{margin-top: 40px;overflow-y: auto;background-color:#E5FCF6;}
+		#con ul{margin-bottom: 10px;display: block;}
+		#con ul li{display: block;width: 100%;font-size: .9em;padding: 5px 0;color:#555;line-height: 1.8em;}
+		#con ul li b{font-size: 1em;color: red;}
+		#con ul li i{font-size: .6em;}
+		#addPage{width:100%;height:100%;position: fixed;z-index: 9999;left: 0;top:0;text-align: center;background-color: rgba(104,104,104,.7);}
+		#addPage h3{padding-top: 90px;}
+		#addPage form{max-width: 500px;margin:0 auto;}
+		#addPage form input{width: 70%;border: 1px solid #e0e0e0;height: 30px;border-radius: 3px;margin-top: 10px;padding-left: 10px;}
+		#addPage form textarea{width: 68%;display: block;height: 100px;border: 1px solid #e0e0e0;margin: 0 auto;margin-top: 10px;color: #666;padding: 10px;border-radius: 8px;}
+		#addPage form button{width:50%;height:35px;font-size:1em;line-height:35px;font-family:"Microsoft YaHei",Arial,Helvetica,sans-serif;display:block;background:#07A5F4;color:#fff;border:1px solid #07A5F4;border-radius:5px;margin:0 auto;margin-top:30px;margin-bottom:50px;}
+		#addButton{position: fixed;right:10px;width: 50px;height: 50px;border-radius: 50%;background-color: #4D5AF6;opacity: 1;text-align: center;line-height: 50px;font-size: 2em;color:#fff;box-shadow: 0 0 10px #999;z-index: 99999;}
+		footer{text-align: center;height:25px;width: 100%;border-top: 1px solid #e0e0e0;position: fixed;bottom: 0;background-color: #54A4F5;color:#fff;max-width: 500px;overflow: hidden;}
+		footer p{font-size: 12px;line-height: 20px;}
+		footer a{color:#fff;font-weight: bold;line-height: 25px;}
+	</style>
+</head>
+<body>
+	<header>
+		<h3 id="title">欢迎测试在线聊天系统</h3>
+	</header>
+	<!-- 聊天记录 -->
+	<section id="con">
+		<ul id="ul">
+		</ul>
+	</section>
+	<!-- 添加按钮 -->
+	<section id="addButton" onclick="addButtonAction()" style="bottom:60px;transform:rotate(0deg);">+</section>
+	<!-- 添加页面 -->
+	<section id="addPage" style="display:none;">
+		<h3 style="color:blue;text-shadow: 0 0 10px #fff;">咱们一起聊天吧</h3>
+		<form onsubmit="return addMsg();">
+			<p><input type="text" name="name" placeholder="请输入您的昵称..." id="name"></p>
+			<p><textarea placeholder="请输入您的聊天内容..." name="message" id="message"></textarea></p>
+			<p><button type="sumbit">点我提交</button></p>
+		</form>
+	</section>
+	<footer id="footer">
+		<p>Copyright (c) 2017 <a href="http://www.jianghuasheng.cn">http://www.jianghuasheng.cn</a></p>
+	</footer>
+
+<script type="text/javascript">
+
+	// W3C标准的ajax
+	var xmlhttp;
+	function loadXMLDoc(url,param) {
+	    xmlhttp = null;
+	    if (window.XMLHttpRequest) { // code for all new browsers
+	        xmlhttp = new XMLHttpRequest();
+	    } else if (window.ActiveXObject) { // code for IE5 and IE6
+	        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	    }
+	    if (xmlhttp != null) {
+	        xmlhttp.onreadystatechange = state_Change;
+	        xmlhttp.open("POST", url, true);
+	        // 发送数据
+	        //POST方式需要自己设置http的请求头
+			xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+			//POST方式发送数据
+			xmlhttp.send("name="+param.name+"&message="+param.message);
+	    } else {
+	        alert("Your browser does not support XMLHTTP.");
+	    }
+	}
+
+	function state_Change() {
+	    if (xmlhttp.readyState == 4) { // 4 = "loaded"
+	        if (xmlhttp.status == 200) { // 200 = OK
+	            // console.log(xmlhttp);
+	            var data = JSON.parse(xmlhttp.response);
+	            // console.log(data);
+	            var code = data.code;
+	            var msg = data.msg;
+	            //读取成功
+	            // console.log(msg);
+	           	if (code == 200) {
+	           		delAddPage();
+	           		// 清空输入框的内容
+	           		document.getElementById('message').value = "";
+	           	//读取出错
+	           	}else{
+	           		alert(msg);
+	           	}
+	        } else {
+	            alert("异步访问失败，请您重试！");
+	        }
+	    }
+	}
+
+
+	// 按钮添加聊天输入框
+	function addButtonAction() {
+		// 按钮动画
+		$("#addButton").animate({
+		 	bottom:($(window).height()-90)+'px',
+		 	transform: 'rotate(45deg)',
+		 	backgroundColor: '#FA3962'
+		 },"ease-in");
+		// 展示点击输入框
+		$('#addPage').show();
+		$("#addButton").attr('onclick', 'delAddPage()');
+	}
+
+	// 按钮关闭聊天输入框
+	function delAddPage(){
+		// alert('关闭输入框');
+		// 按钮动画
+		$("#addButton").animate({
+		 	bottom:'60px',
+		 	transform: 'rotate(0deg)',
+		 	backgroundColor: '#4D5AF6'
+		 },"ease-in");
+		// 展示点击输入框
+		$('#addPage').hide();
+		$("#addButton").attr('onclick', 'addButtonAction()');
+	}
+
+	// 新增聊天接了表单处理
+	function addMsg() {
+		// alert('提交表单啦，注意啦');
+		var name = $('#name').val();
+		var message = $('#message').val();
+		if (name == '') {
+			alert('亲，昵称要填一下的哟！');
+			return false;
+		}
+		if (message == '') {
+			alert('亲，您还没有输入聊天的内容呢！');
+			return false;
+		}
+		// 定义参数传值
+		var param = {
+			name:name,
+			message:message
+		};
+		// ajax请求
+		loadXMLDoc('index.php?a=addMsg',param)
+		return false;
+	}
+
+	window.onload = function () {
+		// 布局定位
+		document.getElementById('con').style.height=(document.body.scrollHeight-58)+"px";
+
+		// 检测是否支持EventSource事件
+		if(typeof(EventSource)!=="undefined"){
+			// SSE 服务器推事件
+			var es = new EventSource("index.php?a=getMsg");
+			console.log(es);
+			// 对返回的数据进行处理
+			es.onmessage=function(e){
+			  	document.getElementById('ul').innerHTML=e.data;
+			  	// 布局定位
+			  	var h = document.getElementById('ul').offsetHeight;
+			  	var h2 = document.body.offsetHeight;
+			  	// 自动滚动到底部
+			  	document.getElementById('con').scrollTop=h-h2;
+			};
+	    }else{
+	    	alert("亲，您的浏览器暂不支持该功能哟，请您换个浏览器试试哈^^");
+	    }
+
+	}
+</script>
+</body>
+</html>
